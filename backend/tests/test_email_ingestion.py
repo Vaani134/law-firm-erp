@@ -619,3 +619,281 @@ class TestMatter1Emails:
         row = db_session.get(Email, eid)
         # These emails should be auto-resolved to Matter 10001-001
         assert row.matter_key == "10001-001", f"{email_id}: matter_key should be 10001-001"
+
+
+# ---------------------------------------------------------------------------
+# Case Brain Logging Tests
+# ---------------------------------------------------------------------------
+class TestCaseBrainLogging:
+    """Tests for automatic CaseBrainLog creation during email ingestion."""
+
+    def test_resolved_email_creates_exactly_one_case_brain_log(self, client, db_session):
+        """Resolved email should create exactly one CaseBrainLog entry."""
+        from app.models.matter import Matter
+        from app.models.matter_participant import MatterParticipant
+        from app.models.case_brain_log import CaseBrainLog
+
+        matter = Matter(
+            matter_key="CBL-001",
+            client_id="TEST",
+            matter_id="001",
+            client_name="Test Client",
+            matter_name="Test Matter",
+            matter_description="Test matter for CaseBrainLog tests",
+            matter_status="open",
+        )
+        db_session.add(matter)
+        participant = MatterParticipant(
+            matter_key="CBL-001",
+            participant_name="Test Participant",
+            email_address="cbl-resolved@example.com",
+            is_active=True,
+        )
+        db_session.add(participant)
+        db_session.commit()
+
+        MATCHING_EML = (
+            b"From: cbl-resolved@example.com\r\n"
+            b"To: other@example.com\r\n"
+            b"Subject: CaseBrain Test\r\n"
+            b"Date: Mon, 11 Aug 2026 09:00:00 -0400\r\n"
+            b"Message-ID: <cbl-resolved-001@example.com>\r\n"
+            b"MIME-Version: 1.0\r\n"
+            b"Content-Type: text/plain; charset=\"utf-8\"\r\n"
+            b"\r\n"
+            b"Test body for CaseBrainLog.\r\n"
+        )
+
+        resp = client.post(
+            "/api/emails/ingest",
+            files={"file": ("test.eml", MATCHING_EML, "message/rfc822")},
+        )
+        assert resp.status_code == 201
+        email_id = resp.json()["email_id"]
+
+        logs = db_session.query(CaseBrainLog).filter(CaseBrainLog.email_id == email_id).all()
+        assert len(logs) == 1
+
+    def test_case_brain_log_contains_correct_fields(self, client, db_session):
+        """CaseBrainLog should have correct matter_key, source fields, and summary."""
+        from app.models.matter import Matter
+        from app.models.matter_participant import MatterParticipant
+        from app.models.case_brain_log import CaseBrainLog
+
+        matter = Matter(
+            matter_key="CBL-002",
+            client_id="TEST",
+            matter_id="002",
+            client_name="Test Client 2",
+            matter_name="Test Matter 2",
+            matter_description="Test matter 2 for CaseBrainLog",
+            matter_status="open",
+        )
+        db_session.add(matter)
+        participant = MatterParticipant(
+            matter_key="CBL-002",
+            participant_name="Test Participant 2",
+            email_address="cbl-fields@example.com",
+            is_active=True,
+        )
+        db_session.add(participant)
+        db_session.commit()
+
+        MATCHING_EML = (
+            b"From: cbl-fields@example.com\r\n"
+            b"To: other@example.com\r\n"
+            b"Subject: CaseBrain Fields Test\r\n"
+            b"Date: Tue, 12 Aug 2026 10:00:00 -0400\r\n"
+            b"Message-ID: <cbl-fields-001@example.com>\r\n"
+            b"MIME-Version: 1.0\r\n"
+            b"Content-Type: text/plain; charset=\"utf-8\"\r\n"
+            b"\r\n"
+            b"Fields test body.\r\n"
+        )
+
+        resp = client.post(
+            "/api/emails/ingest",
+            files={"file": ("test.eml", MATCHING_EML, "message/rfc822")},
+        )
+        assert resp.status_code == 201
+        email_id = resp.json()["email_id"]
+
+        log = db_session.query(CaseBrainLog).filter(CaseBrainLog.email_id == email_id).one()
+        assert log.matter_key == "CBL-002"
+        assert str(log.email_id) == email_id
+        assert log.source_type == "EMAIL"
+        assert log.source_reference == "cbl-fields-001@example.com"
+        assert log.source_actor == "cbl-fields@example.com"
+        assert "CBL-002" in log.update_summary
+        assert log.logged_by is None
+
+    def test_duplicate_email_does_not_create_case_brain_log(self, client, db_session):
+        """Duplicate ingestion should not create another CaseBrainLog."""
+        from app.models.case_brain_log import CaseBrainLog
+
+        # First ingestion — creates email + CaseBrainLog
+        resp1 = client.post(
+            "/api/emails/ingest",
+            files={"file": ("test.eml", MINIMAL_EML, "message/rfc822")},
+        )
+        assert resp1.status_code == 201
+        email_id = resp1.json()["email_id"]
+        initial_count = db_session.query(CaseBrainLog).filter(CaseBrainLog.email_id == email_id).count()
+        assert initial_count == 1
+
+        # Second ingestion of same email — duplicate
+        resp2 = client.post(
+            "/api/emails/ingest",
+            files={"file": ("test.eml", MINIMAL_EML, "message/rfc822")},
+        )
+        assert resp2.status_code == 200
+        assert resp2.json()["status"] == "duplicate"
+
+        final_count = db_session.query(CaseBrainLog).filter(CaseBrainLog.email_id == email_id).count()
+        assert final_count == 1
+
+    def test_ambiguous_email_does_not_create_case_brain_log(self, client, db_session):
+        """Ambiguous match (multiple Matters) should not create a CaseBrainLog."""
+        from app.models.matter import Matter
+        from app.models.matter_participant import MatterParticipant
+        from app.models.case_brain_log import CaseBrainLog
+
+        matter1 = Matter(
+            matter_key="AMBIG-CBL-001",
+            client_id="TEST",
+            matter_id="001",
+            client_name="Test Client A",
+            matter_name="Test Matter A",
+            matter_description="Ambiguous matter A",
+            matter_status="open",
+        )
+        matter2 = Matter(
+            matter_key="AMBIG-CBL-002",
+            client_id="TEST",
+            matter_id="002",
+            client_name="Test Client B",
+            matter_name="Test Matter B",
+            matter_description="Ambiguous matter B",
+            matter_status="open",
+        )
+        db_session.add(matter1)
+        db_session.add(matter2)
+        db_session.add(MatterParticipant(
+            matter_key="AMBIG-CBL-001",
+            participant_name="Alice",
+            email_address="alice@ambig.example",
+            is_active=True,
+        ))
+        db_session.add(MatterParticipant(
+            matter_key="AMBIG-CBL-002",
+            participant_name="Bob",
+            email_address="bob@ambig.example",
+            is_active=True,
+        ))
+        db_session.commit()
+
+        AMBIG_EML = (
+            b"From: alice@ambig.example\r\n"
+            b"To: bob@ambig.example\r\n"
+            b"Subject: Ambiguous\r\n"
+            b"Date: Wed, 13 Aug 2026 11:00:00 -0400\r\n"
+            b"Message-ID: <ambig-cbl-001@example.com>\r\n"
+            b"MIME-Version: 1.0\r\n"
+            b"Content-Type: text/plain; charset=\"utf-8\"\r\n"
+            b"\r\n"
+            b"Ambiguous body.\r\n"
+        )
+
+        resp = client.post(
+            "/api/emails/ingest",
+            files={"file": ("test.eml", AMBIG_EML, "message/rfc822")},
+        )
+        assert resp.status_code == 201
+        email_id = resp.json()["email_id"]
+
+        logs = db_session.query(CaseBrainLog).filter(CaseBrainLog.email_id == email_id).all()
+        assert len(logs) == 0
+
+    def test_unmatched_email_does_not_create_case_brain_log(self, client, db_session):
+        """Unmatched email (no Matter match) should not create a CaseBrainLog."""
+        from app.models.case_brain_log import CaseBrainLog
+
+        NO_MATCH_EML = (
+            b"From: no-match-cbl@example.com\r\n"
+            b"To: nobody@example.com\r\n"
+            b"Subject: No Match\r\n"
+            b"Date: Thu, 14 Aug 2026 12:00:00 -0400\r\n"
+            b"Message-ID: <no-match-cbl-001@example.com>\r\n"
+            b"MIME-Version: 1.0\r\n"
+            b"Content-Type: text/plain; charset=\"utf-8\"\r\n"
+            b"\r\n"
+            b"No match body.\r\n"
+        )
+
+        resp = client.post(
+            "/api/emails/ingest",
+            files={"file": ("test.eml", NO_MATCH_EML, "message/rfc822")},
+        )
+        assert resp.status_code == 201
+        email_id = resp.json()["email_id"]
+
+        logs = db_session.query(CaseBrainLog).filter(CaseBrainLog.email_id == email_id).all()
+        assert len(logs) == 0
+
+    def test_re_ingest_resolved_duplicate_does_not_create_another_case_brain_log(self, client, db_session):
+        """Re-ingesting a resolved email as duplicate must not create another CaseBrainLog."""
+        from app.models.matter import Matter
+        from app.models.matter_participant import MatterParticipant
+        from app.models.case_brain_log import CaseBrainLog
+
+        matter = Matter(
+            matter_key="CBL-RE-001",
+            client_id="TEST",
+            matter_id="001",
+            client_name="Test Client RE",
+            matter_name="Test Matter RE",
+            matter_description="Test matter for re-ingest CaseBrainLog",
+            matter_status="open",
+        )
+        db_session.add(matter)
+        participant = MatterParticipant(
+            matter_key="CBL-RE-001",
+            participant_name="Test Participant RE",
+            email_address="cbl-re@example.com",
+            is_active=True,
+        )
+        db_session.add(participant)
+        db_session.commit()
+
+        MATCHING_EML = (
+            b"From: cbl-re@example.com\r\n"
+            b"To: other@example.com\r\n"
+            b"Subject: Re-ingest Test\r\n"
+            b"Date: Fri, 15 Aug 2026 13:00:00 -0400\r\n"
+            b"Message-ID: <cbl-re-001@example.com>\r\n"
+            b"MIME-Version: 1.0\r\n"
+            b"Content-Type: text/plain; charset=\"utf-8\"\r\n"
+            b"\r\n"
+            b"Re-ingest body.\r\n"
+        )
+
+        # First ingestion — resolved
+        resp1 = client.post(
+            "/api/emails/ingest",
+            files={"file": ("test.eml", MATCHING_EML, "message/rfc822")},
+        )
+        assert resp1.status_code == 201
+        assert resp1.json()["processing_status"] == "MATTER_IDENTIFIED"
+        email_id = resp1.json()["email_id"]
+        logs_after_first = db_session.query(CaseBrainLog).filter(CaseBrainLog.email_id == email_id).count()
+        assert logs_after_first == 1
+
+        # Second ingestion — duplicate
+        resp2 = client.post(
+            "/api/emails/ingest",
+            files={"file": ("test.eml", MATCHING_EML, "message/rfc822")},
+        )
+        assert resp2.status_code == 200
+        assert resp2.json()["status"] == "duplicate"
+        logs_after_second = db_session.query(CaseBrainLog).filter(CaseBrainLog.email_id == email_id).count()
+        assert logs_after_second == 1

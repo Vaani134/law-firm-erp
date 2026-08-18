@@ -36,6 +36,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.models.case_brain_log import CaseBrainLog
 from app.models.email import Email
 from app.schemas.email_ingestion import IngestionDuplicate, IngestionSuccess
 from app.services.matter_resolver import resolve_matter
@@ -218,6 +219,33 @@ def _store_raw_file(raw_bytes: bytes, email_uuid: uuid.UUID) -> str:
 # ---------------------------------------------------------------------------
 # Public ingestion entry point
 # ---------------------------------------------------------------------------
+def _create_case_brain_log(
+    db: Session,
+    email_row: Email,
+    matter_key: str,
+) -> None:
+    """
+    Create a CaseBrainLog entry for a successfully resolved email.
+
+    Idempotent: if a log entry already exists for this email_id, no-op.
+    """
+    existing = db.query(CaseBrainLog).filter(CaseBrainLog.email_id == email_row.email_id).first()
+    if existing:
+        return
+
+    log_entry = CaseBrainLog(
+        matter_key=matter_key,
+        email_id=email_row.email_id,
+        occurred_at=email_row.received_at or datetime.now(timezone.utc),
+        source_type="EMAIL",
+        source_reference=email_row.message_id,
+        source_actor=email_row.sender,
+        update_summary=f"Email received and associated with Matter {matter_key}",
+        logged_by=None,
+    )
+    db.add(log_entry)
+
+
 def ingest_eml(
     raw_bytes: bytes,
     db: Session,
@@ -275,9 +303,10 @@ def ingest_eml(
 
     # Update email based on resolution result
     if resolution_result.status == "resolved":
-        # Exactly one Matter was confidently identified
         email_row.matter_key = resolution_result.matter_key
         email_row.processing_status = resolution_result.processing_status
+
+        _create_case_brain_log(db, email_row, resolution_result.matter_key)
         db.commit()
         db.refresh(email_row)
     # If unresolved, ambiguous, or already_resolved, leave email unchanged
