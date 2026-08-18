@@ -7,6 +7,7 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from app.routes.email_ingestion import router as email_ingestion_router
+from app.routes.matter_resolution import router as matter_resolution_router
 
 app = FastAPI(
     title="Law Firm ERP",
@@ -18,6 +19,7 @@ app = FastAPI(
 # Routers
 # ---------------------------------------------------------------------------
 app.include_router(email_ingestion_router)
+app.include_router(matter_resolution_router)
 
 
 @app.get("/health", tags=["Health"])
