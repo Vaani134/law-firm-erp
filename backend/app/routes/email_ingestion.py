@@ -31,7 +31,7 @@ MAX_EML_SIZE_BYTES = 25 * 1024 * 1024
         "Returns 200 + duplicate status for already-seen emails."
     ),
 )
-async def ingest_email(
+def ingest_email(
     file: UploadFile = File(..., description="RFC 2822 .eml file"),
     db: Session = Depends(get_db),
 ) -> IngestionSuccess | IngestionDuplicate:
@@ -49,7 +49,7 @@ async def ingest_email(
             ),
         )
 
-    raw_bytes = await file.read()
+    raw_bytes = file.file.read()
 
     if len(raw_bytes) == 0:
         raise HTTPException(

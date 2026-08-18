@@ -38,6 +38,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.models.email import Email
 from app.schemas.email_ingestion import IngestionDuplicate, IngestionSuccess
+from app.services.matter_resolver import resolve_matter
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -204,12 +205,14 @@ def _store_raw_file(raw_bytes: bytes, email_uuid: uuid.UUID) -> str:
     Write the raw .eml bytes to disk under data/emails/ingested/<uuid>.eml.
 
     Returns the path string stored in the database (relative to project root).
+    Always uses forward slashes (POSIX-style) for portability across platforms.
     """
     INGESTED_EMAIL_DIR.mkdir(parents=True, exist_ok=True)
     dest = INGESTED_EMAIL_DIR / f"{email_uuid}.eml"
     dest.write_bytes(raw_bytes)
-    # Store a path relative to project root so the record is portable
-    return str(dest.relative_to(_PROJECT_ROOT))
+    # Always store relative POSIX-style path with forward slashes
+    # Use as_posix() to ensure forward slashes on all platforms (including Windows)
+    return (Path("data") / "emails" / "ingested" / f"{email_uuid}.eml").as_posix()
 
 
 # ---------------------------------------------------------------------------
@@ -225,7 +228,10 @@ def ingest_eml(
     1. Parse the .eml bytes.
     2. Check for duplicates.
     3. If duplicate → return IngestionDuplicate (no DB write).
-    4. If new → store file, create Email row, commit, return IngestionSuccess.
+    4. If new → store file, create Email row, commit.
+    5. Attempt Matter Resolution (reuses existing resolver).
+    6. Update email with resolved matter_key and processing_status if matched.
+    7. Return IngestionSuccess.
 
     Raises ValueError for unparseable or invalid input.
     """
@@ -263,6 +269,19 @@ def ingest_eml(
     db.add(email_row)
     db.commit()
     db.refresh(email_row)
+
+    # Automatically attempt Matter Resolution for the new email
+    resolution_result = resolve_matter(email_row.email_id, db)
+
+    # Update email based on resolution result
+    if resolution_result.status == "resolved":
+        # Exactly one Matter was confidently identified
+        email_row.matter_key = resolution_result.matter_key
+        email_row.processing_status = resolution_result.processing_status
+        db.commit()
+        db.refresh(email_row)
+    # If unresolved, ambiguous, or already_resolved, leave email unchanged
+    # (matter_key stays NULL, processing_status stays as-is)
 
     return IngestionSuccess(
         email_id=email_row.email_id,
