@@ -7,6 +7,8 @@ from __future__ import annotations
 from fastapi import FastAPI
 
 from app.routes.case_brain import router as case_brain_router
+from app.routes.email_detail import router as email_detail_router
+from app.routes.matter_detail import router as matter_detail_router
 from app.routes.email_ingestion import router as email_ingestion_router
 from app.routes.matter_resolution import router as matter_resolution_router
 
@@ -20,6 +22,8 @@ app = FastAPI(
 # Routers
 # ---------------------------------------------------------------------------
 app.include_router(case_brain_router)
+app.include_router(email_detail_router)
+app.include_router(matter_detail_router)
 app.include_router(email_ingestion_router)
 app.include_router(matter_resolution_router)
 
