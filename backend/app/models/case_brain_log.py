@@ -3,10 +3,11 @@ CaseBrainLog model — append-only audit trail of Case Brain updates.
 
 Table: case_brain_log
 
-Design rules enforced here:
+Design rules:
   - No UPDATE or DELETE should ever be issued against this table.
-  - No UNIQUE constraint on email_id: the same email may be reprocessed,
-    producing multiple log entries.
+  - No database UNIQUE constraint exists on email_id.
+  - Application-level idempotency currently prevents duplicate
+    resolution logs for the same email.
 """
 
 from __future__ import annotations
