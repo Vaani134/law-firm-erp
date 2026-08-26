@@ -45,6 +45,7 @@ from app.schemas.matter_resolution import ResolutionResult
 # RECEIVED | PROCESSING | MATTER_IDENTIFIED | ANALYZED |
 # COMPLETED | REVIEW_REQUIRED | FAILED
 STATUS_RESOLVED = "MATTER_IDENTIFIED"
+STATUS_REVIEW_REQUIRED = "REVIEW_REQUIRED"
 
 
 def _collect_addresses(email_row: Email) -> set[str]:
@@ -94,7 +95,8 @@ def resolve_matter(
     addresses = _collect_addresses(email_row)
 
     if not addresses:
-        # No addresses to match against — leave unresolved.
+        # No addresses to match against — mark for review.
+        email_row.processing_status = STATUS_REVIEW_REQUIRED
         return ResolutionResult(
             email_id=email_row.email_id,
             status="unresolved",
@@ -124,8 +126,6 @@ def resolve_matter(
         resolved_key = next(iter(matched_matter_keys))
         email_row.matter_key = resolved_key
         email_row.processing_status = STATUS_RESOLVED
-        db.commit()
-        db.refresh(email_row)
 
         return ResolutionResult(
             email_id=email_row.email_id,
@@ -135,7 +135,8 @@ def resolve_matter(
             processing_status=email_row.processing_status,
         )
 
-    # Zero matches or ambiguous (>1 distinct Matter) — leave unchanged.
+    # Zero matches or ambiguous (>1 distinct Matter) — mark for review.
+    email_row.processing_status = STATUS_REVIEW_REQUIRED
     return ResolutionResult(
         email_id=email_row.email_id,
         status="unresolved",

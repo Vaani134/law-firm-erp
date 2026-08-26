@@ -13,7 +13,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
+from app.models.email import Email
 from app.schemas.matter_resolution import ResolutionResult
+from app.services.case_brain import create_case_brain_log
 from app.services.matter_resolver import resolve_matter
 
 router = APIRouter(prefix="/api/emails", tags=["Matter Resolution"])
@@ -34,7 +36,15 @@ def resolve_email(
     db: Session = Depends(get_db),
 ) -> ResolutionResult:
     try:
-        return resolve_matter(email_id=email_id, db=db)
+        result = resolve_matter(email_id=email_id, db=db)
+        if result.status == "resolved":
+            email_row = db.get(Email, email_id)
+            create_case_brain_log(db, email_row, result.matter_key)
+            db.commit()
+            db.refresh(email_row)
+        elif result.status == "unresolved":
+            db.commit()
+        return result
     except ValueError as exc:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

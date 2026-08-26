@@ -209,7 +209,7 @@ class TestAutoMatterResolution:
         email_id = resp.json()["email_id"]
         email_row = db_session.get(Email, email_id)
         assert email_row.matter_key is None
-        assert email_row.processing_status == "RECEIVED"
+        assert email_row.processing_status == "REVIEW_REQUIRED"
 
     def test_ingest_ambiguous_matter_remains_unresolved(self, client, db_session):
         """Email matching multiple Matters should remain unresolved (ambiguous)."""
@@ -280,7 +280,7 @@ class TestAutoMatterResolution:
         email_id = resp.json()["email_id"]
         email_row = db_session.get(Email, email_id)
         assert email_row.matter_key is None
-        assert email_row.processing_status == "RECEIVED"
+        assert email_row.processing_status == "REVIEW_REQUIRED"
 
     def test_duplicate_email_does_not_run_resolution(self, client, db_session):
         """Duplicate emails should not trigger Matter Resolution again."""
@@ -340,7 +340,7 @@ class TestPostIngestionState:
         assert row is not None
         assert row.matter_key is None
 
-    def test_processing_status_is_received_when_no_match(self, client, db_session):
+    def test_processing_status_is_review_required_when_no_match(self, client, db_session):
         from app.models.email import Email
 
         resp = client.post(
@@ -349,14 +349,14 @@ class TestPostIngestionState:
         )
         email_id = uuid.UUID(resp.json()["email_id"])
         row = db_session.get(Email, email_id)
-        assert row.processing_status == "RECEIVED"
+        assert row.processing_status == "REVIEW_REQUIRED"
 
-    def test_response_processing_status_is_received_when_no_match(self, client):
+    def test_response_processing_status_is_review_required_when_no_match(self, client):
         resp = client.post(
             "/api/emails/ingest",
             files={"file": ("test.eml", self.UNMATCHED_EML, "message/rfc822")},
         )
-        assert resp.json()["processing_status"] == "RECEIVED"
+        assert resp.json()["processing_status"] == "REVIEW_REQUIRED"
 
 
 # ---------------------------------------------------------------------------
