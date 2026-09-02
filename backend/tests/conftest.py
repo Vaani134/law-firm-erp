@@ -9,6 +9,10 @@ Strategy:
     deletes it in teardown using the known PKs.
   - The email ingestion service's file-storage path is overridden to a
     temporary directory so tests never write to data/emails/ingested/.
+  - A session-scoped autouse fixture seeds Matter 1 (10001-001) and its
+    participants before any test runs. The seed is idempotent and is
+    imported from scripts/seed_matter_1.py — production behavior is
+    unchanged.
 """
 
 from __future__ import annotations
@@ -40,6 +44,31 @@ TestingSessionLocal = sessionmaker(
 )
 
 # ---------------------------------------------------------------------------
+# Session-scoped seed fixture: ensure Matter 1 (10001-001) exists.
+# ---------------------------------------------------------------------------
+# Several tests in this suite reference the production seed matter
+# 10001-001 ("Harbor Spirits / Riverside Liquors Acquisition") and its
+# 4 participants. Without this fixture those tests fail with
+# ForeignKeyViolation because the matter row is not present in the DB.
+#
+# The seeding logic itself lives in scripts/seed_matter_1.py and is
+# idempotent (it no-ops if Matter 10001-001 already exists). We import
+# and call it in-process so the test suite is self-contained.
+# ---------------------------------------------------------------------------
+_SCRIPTS_DIR = Path(__file__).parent.parent.parent / "scripts"
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _ensure_matter_1_seed():
+    """Seed Matter 10001-001 and its participants if not already present."""
+    import seed_matter_1  # noqa: WPS433 — intentional in-process import
+    seed_matter_1.run_seed()
+    yield
+
+
+# ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
 
@@ -65,7 +94,7 @@ def client(db_session, tmp_path, monkeypatch):
     from app.models.matter import Matter
     from app.models.matter_participant import MatterParticipant
     from app.models.case_brain_log import CaseBrainLog
-    
+
     def _override():
         yield db_session
 
@@ -87,7 +116,7 @@ def client(db_session, tmp_path, monkeypatch):
         # Also clean up any test matters created with other patterns
         db_session.query(Matter).filter(Matter.client_id == 'TEST').delete()
         db_session.commit()
-        
+
         app.dependency_overrides.clear()
 
 
