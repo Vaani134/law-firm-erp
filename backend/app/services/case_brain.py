@@ -19,6 +19,7 @@ def create_case_brain_log(
     db: Session,
     email_row: Email,
     matter_key: str,
+    update_summary: str | None = None,
 ) -> None:
     """
     Create a CaseBrainLog entry for a successfully resolved email.
@@ -30,6 +31,9 @@ def create_case_brain_log(
     if existing:
         return
 
+    if update_summary is None:
+        update_summary = f"Email received and associated with Matter {matter_key}"
+
     log_entry = CaseBrainLog(
         matter_key=matter_key,
         email_id=email_row.email_id,
@@ -37,7 +41,7 @@ def create_case_brain_log(
         source_type="EMAIL",
         source_reference=email_row.message_id,
         source_actor=email_row.sender,
-        update_summary=f"Email received and associated with Matter {matter_key}",
+        update_summary=update_summary,
         logged_by=None,
     )
     db.add(log_entry)
