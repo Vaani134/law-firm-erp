@@ -3,6 +3,7 @@ import type { EmailDetail } from '../types/emailDetail';
 import type { MatterDetailResponse } from '../types/matterDetail';
 import type { CaseBrainTimelineResponse } from '../types/caseBrain';
 import type { MatterAssignmentResponse, MatterSearchResponse } from '../types/matterSearch';
+import type { CaseBrainEntryCreate, CaseBrainEntryResponse } from '../types/caseBrainEntry';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -35,6 +36,22 @@ export async function fetchCaseBrainTimeline(matterKey: string | undefined): Pro
   if (!matterKey) throw new Error('Missing matterKey');
   const response = await fetch(`${API_BASE_URL}/api/matters/${encodeURIComponent(matterKey)}/case-brain`);
   return handleResponse<CaseBrainTimelineResponse>(response);
+}
+
+export async function addCaseBrainEntry(
+  matterKey: string | undefined,
+  payload: CaseBrainEntryCreate,
+): Promise<CaseBrainEntryResponse> {
+  if (!matterKey) throw new Error('Missing matterKey');
+  const response = await fetch(
+    `${API_BASE_URL}/api/matters/${encodeURIComponent(matterKey)}/case-brain`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    },
+  );
+  return handleResponse<CaseBrainEntryResponse>(response);
 }
 
 export async function searchMatters(query: string): Promise<MatterSearchResponse> {
