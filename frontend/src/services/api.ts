@@ -54,11 +54,23 @@ export async function addCaseBrainEntry(
   return handleResponse<CaseBrainEntryResponse>(response);
 }
 
-export async function searchMatters(query: string): Promise<MatterSearchResponse> {
-  const trimmed = query.trim();
-  const params = new URLSearchParams({ limit: '20', offset: '0' });
+export async function searchMatters(
+  query?: string,
+  status?: string,
+  practiceArea?: string,
+  limit: number = 20,
+  offset: number = 0,
+): Promise<MatterSearchResponse> {
+  const params = new URLSearchParams({ limit: String(limit), offset: String(offset) });
+  const trimmed = (query ?? '').trim();
   if (trimmed.length > 0) {
     params.set('q', trimmed);
+  }
+  if (status && status.trim().length > 0) {
+    params.set('status', status.trim());
+  }
+  if (practiceArea && practiceArea.trim().length > 0) {
+    params.set('practice_area', practiceArea.trim());
   }
   const response = await fetch(`${API_BASE_URL}/api/matters?${params.toString()}`);
   return handleResponse<MatterSearchResponse>(response);
