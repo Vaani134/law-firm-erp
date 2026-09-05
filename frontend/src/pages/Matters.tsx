@@ -68,11 +68,13 @@ export function Matters() {
       setError(null);
       try {
         const resp = await searchMatters(q, status, pa, PAGE_SIZE, pageIndex * PAGE_SIZE);
+        // Only update state if this is still the current request
         if (cancelledRef.current || seq !== seqRef.current) return;
         setResults(resp.matters);
         setTotal(resp.total);
         setLoading(false);
       } catch (err) {
+        // Only update state if this is still the current request
         if (cancelledRef.current || seq !== seqRef.current) return;
         setError(err instanceof Error ? err.message : 'Failed to load matters.');
         setResults([]);
@@ -103,7 +105,9 @@ export function Matters() {
 
   // Page-change fetch (no debounce — direct). Only fires when the user
   // actually changes the page; not when filters change.
+  // Skip the fetch if page is 0 (already handled by filter effect above).
   useEffect(() => {
+    if (page === 0) return;
     void fetchPage(query, statusFilter, practiceArea, page);
     // Intentionally only depend on `page` so filter changes do not
     // re-trigger this effect.
@@ -112,6 +116,7 @@ export function Matters() {
 
   // Cleanup on unmount: invalidate any pending response.
   useEffect(() => {
+    cancelledRef.current = false;  // Reset on mount
     return () => {
       cancelledRef.current = true;
       if (debounceRef.current !== null) {

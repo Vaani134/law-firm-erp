@@ -5,6 +5,7 @@ Law Firm ERP — FastAPI application entry point.
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.case_brain import router as case_brain_router
 from app.routes.case_brain_entry import router as case_brain_entry_router
@@ -20,6 +21,17 @@ app = FastAPI(
     title="Law Firm ERP",
     description="Internal ERP backend for a law firm.",
     version="0.1.0",
+)
+
+# ---------------------------------------------------------------------------
+# CORS Middleware
+# ---------------------------------------------------------------------------
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 # ---------------------------------------------------------------------------
