@@ -4,6 +4,7 @@ import type { MatterDetailResponse } from '../types/matterDetail';
 import type { CaseBrainTimelineResponse } from '../types/caseBrain';
 import type { MatterAssignmentResponse, MatterSearchResponse } from '../types/matterSearch';
 import type { CaseBrainEntryCreate, CaseBrainEntryResponse } from '../types/caseBrainEntry';
+import type { MatterCreateRequest, MatterCreateResponse } from '../types/matterCreation';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -89,4 +90,18 @@ export async function assignEmailToMatter(
     },
   );
   return handleResponse<MatterAssignmentResponse>(response);
+}
+
+export async function createMatter(
+  payload: MatterCreateRequest,
+): Promise<MatterCreateResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/matters`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    },
+  );
+  return handleResponse<MatterCreateResponse>(response);
 }

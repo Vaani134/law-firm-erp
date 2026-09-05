@@ -133,7 +133,12 @@ export function Matters() {
 
   return (
     <div className="matters-page">
-      <h2>Matters</h2>
+      <div className="page-header">
+        <h2>Matters</h2>
+        <Link to="/matters/new" className="btn btn-primary">
+          Create Matter
+        </Link>
+      </div>
 
       <div className="panel">
         <div className="panel-body">
