@@ -900,16 +900,16 @@ export function Tasks() {
               <tbody>
                 {results.map((task) => (
                   <tr key={task.task_id}>
-                    <td>
-                      <div className="task-title-cell">
-                        <span className="task-title-text">{task.title}</span>
-                        {task.description && (
-                          <span className="task-description-hint" title={task.description}>
-                            💬
-                          </span>
-                        )}
-                      </div>
-                    </td>
+                  <td>
+                    <Link to={`/tasks/${encodeURIComponent(task.task_id)}`} className="link task-title-link">
+                      {task.title}
+                    </Link>
+                    {task.description && (
+                      <span className="task-description-hint" title={task.description}>
+                        💬
+                      </span>
+                    )}
+                  </td>
                     <td>
                       <Link to={`/matters/${encodeURIComponent(task.matter_key)}`} className="link">
                         {task.matter_key}

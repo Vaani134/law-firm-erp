@@ -8,6 +8,7 @@ import { MatterDetail } from './pages/MatterDetail';
 import { EmailDetail } from './pages/EmailDetail';
 import { CaseBrain } from './pages/CaseBrain';
 import { Tasks } from './pages/Tasks';
+import { TaskDetail } from './pages/TaskDetail';
 
 export function App() {
   return (
@@ -22,6 +23,7 @@ export function App() {
           <Route path="/email/:emailId" element={<EmailDetail />} />
           <Route path="/case-brain" element={<CaseBrain />} />
           <Route path="/tasks" element={<Tasks />} />
+          <Route path="/tasks/:taskId" element={<TaskDetail />} />
         </Routes>
       </Layout>
     </BrowserRouter>

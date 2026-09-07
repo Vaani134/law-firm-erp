@@ -284,3 +284,11 @@ export async function updateTask(
   );
   return handleResponse<TaskResponse>(response);
 }
+
+export async function fetchTask(
+  taskId: string | undefined,
+): Promise<TaskResponse> {
+  if (!taskId) throw new Error('Missing taskId');
+  const response = await fetch(`${API_BASE_URL}/api/tasks/${encodeURIComponent(taskId)}`);
+  return handleResponse<TaskResponse>(response);
+}

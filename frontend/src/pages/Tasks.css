@@ -118,14 +118,14 @@
   border-bottom: none;
 }
 
-.task-title-cell {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.task-title-link {
+  font-weight: 500;
+  color: #2563eb;
+  text-decoration: none;
 }
 
-.task-title-text {
-  font-weight: 500;
+.task-title-link:hover {
+  text-decoration: underline;
 }
 
 .task-description-hint {

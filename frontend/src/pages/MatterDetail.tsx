@@ -815,14 +815,14 @@ export function MatterDetail() {
                 {tasks.map((task) => (
                   <tr key={task.task_id}>
                     <td>
-                      <div className="task-title-cell">
-                        <span className="task-title-text">{task.title}</span>
-                        {task.description && (
-                          <span className="task-description-hint" title={task.description}>
-                            💬
-                          </span>
-                        )}
-                      </div>
+                      <Link to={`/tasks/${encodeURIComponent(task.task_id)}`} className="link task-title-link">
+                        {task.title}
+                      </Link>
+                      {task.description && (
+                        <span className="task-description-hint" title={task.description}>
+                          💬
+                        </span>
+                      )}
                     </td>
                     <td>{task.task_type.replace('_', ' ')}</td>
                     <td>
