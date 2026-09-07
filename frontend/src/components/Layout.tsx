@@ -12,17 +12,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <NavLink to="/" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
             Dashboard
           </NavLink>
-          <NavLink to="/review-queue" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-            Review Queue
-          </NavLink>
           <NavLink to="/matters" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
             Matters
+          </NavLink>
+          <NavLink to="/tasks" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+            Tasks
           </NavLink>
           <NavLink to="/case-brain" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
             Case Brain
           </NavLink>
-          <NavLink to="/tasks" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-            Tasks
+          <NavLink to="/review-queue" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+            Review Queue
           </NavLink>
         </nav>
       </aside>
