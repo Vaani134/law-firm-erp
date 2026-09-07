@@ -1,0 +1,248 @@
+.tasks-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.quick-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.quick-filter-btn {
+  padding: 6px 14px;
+  border-radius: 9999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.quick-filter-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.quick-filter-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.quick-filter-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tasks-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: flex-end;
+}
+
+.tasks-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+
+.tasks-filter-field-grow {
+  flex: 1 1 260px;
+}
+
+.tasks-filter-field label {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 500;
+}
+
+.tasks-filter-field input,
+.tasks-filter-field select {
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111827;
+  background: #ffffff;
+  box-sizing: border-box;
+  min-height: 36px;
+}
+
+.tasks-filter-field input:focus,
+.tasks-filter-field select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.task-table-wrap {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 900px;
+}
+
+.task-table th {
+  text-align: left;
+  padding: 10px 12px;
+  color: #6b7280;
+  font-weight: 500;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.task-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+  vertical-align: middle;
+}
+
+.task-table tr:last-child td {
+  border-bottom: none;
+}
+
+.task-title-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.task-title-text {
+  font-weight: 500;
+}
+
+.task-description-hint {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+.task-waiting-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  background: #fef3c7;
+  color: #92400e;
+  text-transform: capitalize;
+}
+
+.tasks-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.tasks-pagination-label {
+  color: #6b7280;
+  font-size: 13px;
+  min-width: 140px;
+  text-align: center;
+}
+
+.empty-state {
+  padding: 48px 20px;
+  text-align: center;
+  color: #6b7280;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.task-form {
+  margin-bottom: 16px;
+}
+
+.matter-dropdown {
+  position: absolute;
+  z-index: 10;
+  width: 100%;
+  max-height: 200px;
+  overflow-y: auto;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  margin-top: 4px;
+}
+
+.matter-dropdown-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.matter-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.matter-dropdown-item:hover {
+  background: #f9fafb;
+}
+
+.matter-dropdown-key {
+  font-weight: 600;
+  font-size: 13px;
+  color: #111827;
+}
+
+.matter-dropdown-name {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.matter-selected-label {
+  font-size: 12px;
+  color: #2563eb;
+  margin-top: 4px;
+  display: block;
+}
+
+.entry-form-field {
+  position: relative;
+}
+
+@media (max-width: 720px) {
+  .quick-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .quick-filter-btn {
+    width: 100%;
+  }
+
+  .tasks-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tasks-filter-field,
+  .tasks-filter-field-grow {
+    min-width: 0;
+    width: 100%;
+  }
+}

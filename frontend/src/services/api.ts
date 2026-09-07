@@ -168,6 +168,93 @@ export async function fetchMatterTasks(
   return handleResponse<TaskListResponse>(response);
 }
 
+export async function fetchTasks({
+  q,
+  matterKey,
+  assignedTo,
+  taskType,
+  status,
+  priority,
+  actionOwnerType,
+  waitingOn,
+  dueFrom,
+  dueTo,
+  nextActionFrom,
+  nextActionTo,
+  limit = 50,
+  offset = 0,
+}: {
+  q?: string;
+  matterKey?: string;
+  assignedTo?: string;
+  taskType?: string;
+  status?: string;
+  priority?: string;
+  actionOwnerType?: string;
+  waitingOn?: string;
+  dueFrom?: string;
+  dueTo?: string;
+  nextActionFrom?: string;
+  nextActionTo?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<TaskListResponse> {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const trimmedQuery = (q ?? '').trim();
+  if (trimmedQuery.length > 0) {
+    params.set('q', trimmedQuery);
+  }
+  const trimmedMatter = (matterKey ?? '').trim();
+  if (trimmedMatter.length > 0) {
+    params.set('matter_key', trimmedMatter);
+  }
+  const trimmedAssigned = (assignedTo ?? '').trim();
+  if (trimmedAssigned.length > 0) {
+    params.set('assigned_to', trimmedAssigned);
+  }
+  const trimmedType = (taskType ?? '').trim();
+  if (trimmedType.length > 0) {
+    params.set('task_type', trimmedType);
+  }
+  const trimmedStatus = (status ?? '').trim();
+  if (trimmedStatus.length > 0) {
+    params.set('status', trimmedStatus);
+  }
+  const trimmedPriority = (priority ?? '').trim();
+  if (trimmedPriority.length > 0) {
+    params.set('priority', trimmedPriority);
+  }
+  const trimmedOwner = (actionOwnerType ?? '').trim();
+  if (trimmedOwner.length > 0) {
+    params.set('action_owner_type', trimmedOwner);
+  }
+  const trimmedWaiting = (waitingOn ?? '').trim();
+  if (trimmedWaiting.length > 0) {
+    params.set('waiting_on', trimmedWaiting);
+  }
+  const trimmedDueFrom = (dueFrom ?? '').trim();
+  if (trimmedDueFrom.length > 0) {
+    params.set('due_from', trimmedDueFrom);
+  }
+  const trimmedDueTo = (dueTo ?? '').trim();
+  if (trimmedDueTo.length > 0) {
+    params.set('due_to', trimmedDueTo);
+  }
+  const trimmedNextFrom = (nextActionFrom ?? '').trim();
+  if (trimmedNextFrom.length > 0) {
+    params.set('next_action_from', trimmedNextFrom);
+  }
+  const trimmedNextTo = (nextActionTo ?? '').trim();
+  if (trimmedNextTo.length > 0) {
+    params.set('next_action_to', trimmedNextTo);
+  }
+  const response = await fetch(`${API_BASE_URL}/api/tasks?${params.toString()}`);
+  return handleResponse<TaskListResponse>(response);
+}
+
 export async function createTask(
   payload: TaskCreate,
 ): Promise<TaskResponse> {
