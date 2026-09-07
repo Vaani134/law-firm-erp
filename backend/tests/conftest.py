@@ -255,6 +255,7 @@ def client(db_session, tmp_path, monkeypatch):
     from app.models.matter import Matter
     from app.models.matter_participant import MatterParticipant
     from app.models.case_brain_log import CaseBrainLog
+    from app.models.task import Task
 
     def _override():
         yield db_session
@@ -270,6 +271,7 @@ def client(db_session, tmp_path, monkeypatch):
     finally:
         # Clean up all test data (except production seed data)
         # Delete in reverse order of foreign key dependencies
+        db_session.query(Task).delete()
         db_session.query(CaseBrainLog).delete()
         db_session.query(Email).delete()
         db_session.query(MatterParticipant).filter(MatterParticipant.matter_key.like('TEST-%')).delete()

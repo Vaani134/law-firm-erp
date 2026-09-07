@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.routes.case_brain import router as case_brain_router
 from app.routes.case_brain_entry import router as case_brain_entry_router
+from app.routes.case_brain_search import router as case_brain_search_router
 from app.routes.email_detail import router as email_detail_router
 from app.routes.matter_assignment import router as matter_assignment_router
 from app.routes.matter_creation import router as matter_creation_router
@@ -17,6 +18,7 @@ from app.routes.matter_search import router as matter_search_router
 from app.routes.review_queue import router as review_queue_router
 from app.routes.email_ingestion import router as email_ingestion_router
 from app.routes.matter_resolution import router as matter_resolution_router
+from app.routes.tasks import router as tasks_router
 
 app = FastAPI(
     title="Law Firm ERP",
@@ -40,6 +42,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 app.include_router(case_brain_router)
 app.include_router(case_brain_entry_router)
+app.include_router(case_brain_search_router)
 app.include_router(review_queue_router)
 app.include_router(email_detail_router)
 app.include_router(matter_assignment_router)
@@ -48,6 +51,7 @@ app.include_router(matter_detail_router)
 app.include_router(matter_search_router)
 app.include_router(email_ingestion_router)
 app.include_router(matter_resolution_router)
+app.include_router(tasks_router)
 
 
 @app.get("/health", tags=["Health"])
