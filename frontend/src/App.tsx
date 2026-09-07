@@ -6,6 +6,7 @@ import { Matters } from './pages/Matters';
 import { MatterCreate } from './pages/MatterCreate';
 import { MatterDetail } from './pages/MatterDetail';
 import { EmailDetail } from './pages/EmailDetail';
+import { CaseBrain } from './pages/CaseBrain';
 
 export function App() {
   return (
@@ -18,6 +19,7 @@ export function App() {
           <Route path="/matters/new" element={<MatterCreate />} />
           <Route path="/matters/:matterKey" element={<MatterDetail />} />
           <Route path="/email/:emailId" element={<EmailDetail />} />
+          <Route path="/case-brain" element={<CaseBrain />} />
         </Routes>
       </Layout>
     </BrowserRouter>

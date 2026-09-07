@@ -2,6 +2,7 @@ import type { ReviewQueueEmail } from '../types/reviewQueue';
 import type { EmailDetail } from '../types/emailDetail';
 import type { MatterDetailResponse } from '../types/matterDetail';
 import type { CaseBrainTimelineResponse } from '../types/caseBrain';
+import type { CaseBrainSearchResponse } from '../types/caseBrainSearch';
 import type { MatterAssignmentResponse, MatterSearchResponse } from '../types/matterSearch';
 import type { CaseBrainEntryCreate, CaseBrainEntryResponse } from '../types/caseBrainEntry';
 import type { MatterCreateRequest, MatterCreateResponse } from '../types/matterCreation';
@@ -37,6 +38,51 @@ export async function fetchCaseBrainTimeline(matterKey: string | undefined): Pro
   if (!matterKey) throw new Error('Missing matterKey');
   const response = await fetch(`${API_BASE_URL}/api/matters/${encodeURIComponent(matterKey)}/case-brain`);
   return handleResponse<CaseBrainTimelineResponse>(response);
+}
+
+export async function searchCaseBrain({
+  q,
+  sourceType,
+  matterKey,
+  dateFrom,
+  dateTo,
+  limit = 50,
+  offset = 0,
+}: {
+  q?: string;
+  sourceType?: string;
+  matterKey?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  limit?: number;
+  offset?: number;
+}): Promise<CaseBrainSearchResponse> {
+  const params = new URLSearchParams({
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const trimmedQuery = (q ?? '').trim();
+  if (trimmedQuery.length > 0) {
+    params.set('q', trimmedQuery);
+  }
+  const trimmedSource = (sourceType ?? '').trim();
+  if (trimmedSource.length > 0) {
+    params.set('source_type', trimmedSource);
+  }
+  const trimmedMatter = (matterKey ?? '').trim();
+  if (trimmedMatter.length > 0) {
+    params.set('matter_key', trimmedMatter);
+  }
+  const trimmedFrom = (dateFrom ?? '').trim();
+  if (trimmedFrom.length > 0) {
+    params.set('date_from', trimmedFrom);
+  }
+  const trimmedTo = (dateTo ?? '').trim();
+  if (trimmedTo.length > 0) {
+    params.set('date_to', trimmedTo);
+  }
+  const response = await fetch(`${API_BASE_URL}/api/case-brain?${params.toString()}`);
+  return handleResponse<CaseBrainSearchResponse>(response);
 }
 
 export async function addCaseBrainEntry(

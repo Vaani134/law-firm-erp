@@ -1,0 +1,148 @@
+.case-brain-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.case-brain-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  align-items: flex-end;
+}
+
+.case-brain-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 180px;
+}
+
+.case-brain-filter-field-grow {
+  flex: 1 1 280px;
+}
+
+.case-brain-filter-field label {
+  font-size: 12px;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  font-weight: 500;
+}
+
+.case-brain-filter-field input,
+.case-brain-filter-field select {
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111827;
+  background: #ffffff;
+  box-sizing: border-box;
+  min-height: 36px;
+}
+
+.case-brain-filter-field input:focus,
+.case-brain-filter-field select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.case-brain-alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.case-brain-retry {
+  flex-shrink: 0;
+}
+
+.case-brain-meta {
+  margin: 0 0 8px 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.case-brain-meta-text {
+  display: inline-block;
+}
+
+.case-brain-table-wrap {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.case-brain-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  min-width: 900px;
+}
+
+.case-brain-table th {
+  text-align: left;
+  padding: 10px 14px;
+  color: #6b7280;
+  font-weight: 500;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.case-brain-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f3f4f6;
+  color: #374151;
+  vertical-align: middle;
+}
+
+.case-brain-table tr:last-child td {
+  border-bottom: none;
+}
+
+.case-brain-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.case-brain-pagination-label {
+  color: #6b7280;
+  font-size: 13px;
+  min-width: 110px;
+  text-align: center;
+}
+
+.case-brain-help {
+  margin: 24px 0 0 0;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+.empty-state {
+  padding: 48px 20px;
+  text-align: center;
+  color: #6b7280;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+@media (max-width: 720px) {
+  .case-brain-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .case-brain-filter-field,
+  .case-brain-filter-field-grow {
+    min-width: 0;
+    width: 100%;
+  }
+}

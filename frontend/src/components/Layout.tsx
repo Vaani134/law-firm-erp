@@ -18,6 +18,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <NavLink to="/matters" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
             Matters
           </NavLink>
+          <NavLink to="/case-brain" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+            Case Brain
+          </NavLink>
         </nav>
       </aside>
       <main className="main-content">
