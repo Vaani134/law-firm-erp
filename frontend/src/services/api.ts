@@ -6,6 +6,7 @@ import type { CaseBrainSearchResponse } from '../types/caseBrainSearch';
 import type { MatterAssignmentResponse, MatterSearchResponse } from '../types/matterSearch';
 import type { CaseBrainEntryCreate, CaseBrainEntryResponse } from '../types/caseBrainEntry';
 import type { MatterCreateRequest, MatterCreateResponse } from '../types/matterCreation';
+import type { TaskCreate, TaskListResponse, TaskResponse, TaskUpdate } from '../types/task';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
@@ -150,4 +151,49 @@ export async function createMatter(
     },
   );
   return handleResponse<MatterCreateResponse>(response);
+}
+
+export async function fetchMatterTasks(
+  matterKey: string | undefined,
+  limit = 50,
+  offset = 0,
+): Promise<TaskListResponse> {
+  if (!matterKey) throw new Error('Missing matterKey');
+  const params = new URLSearchParams({
+    matter_key: matterKey,
+    limit: String(limit),
+    offset: String(offset),
+  });
+  const response = await fetch(`${API_BASE_URL}/api/tasks?${params.toString()}`);
+  return handleResponse<TaskListResponse>(response);
+}
+
+export async function createTask(
+  payload: TaskCreate,
+): Promise<TaskResponse> {
+  const response = await fetch(
+    `${API_BASE_URL}/api/tasks`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    },
+  );
+  return handleResponse<TaskResponse>(response);
+}
+
+export async function updateTask(
+  taskId: string,
+  payload: TaskUpdate,
+): Promise<TaskResponse> {
+  if (!taskId) throw new Error('Missing taskId');
+  const response = await fetch(
+    `${API_BASE_URL}/api/tasks/${encodeURIComponent(taskId)}`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    },
+  );
+  return handleResponse<TaskResponse>(response);
 }

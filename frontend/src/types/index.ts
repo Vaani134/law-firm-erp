@@ -5,3 +5,4 @@ export * from './caseBrainEntry';
 export * from './caseBrainSearch';
 export * from './matterDetail';
 export * from './matterSearch';
+export * from './task';
