@@ -242,6 +242,24 @@ def db_session():
     try:
         yield session
     finally:
+        from app.models.case_brain_log import CaseBrainLog
+        from app.models.email import Email
+        from app.models.matter import Matter
+        from app.models.matter_event import MatterEvent
+        from app.models.matter_participant import MatterParticipant
+        from app.models.task import Task
+
+        try:
+            session.rollback()
+        except Exception:
+            pass
+        session.query(Task).delete()
+        session.query(CaseBrainLog).delete()
+        session.query(Email).delete()
+        session.query(MatterEvent).delete()
+        session.query(MatterParticipant).filter(MatterParticipant.matter_key != "10001-001").delete()
+        session.query(Matter).filter(Matter.matter_key != "10001-001").delete()
+        session.commit()
         session.close()
 
 
@@ -256,6 +274,7 @@ def client(db_session, tmp_path, monkeypatch):
     from app.models.matter_participant import MatterParticipant
     from app.models.case_brain_log import CaseBrainLog
     from app.models.task import Task
+    from app.models.matter_event import MatterEvent
 
     def _override():
         yield db_session
@@ -274,6 +293,7 @@ def client(db_session, tmp_path, monkeypatch):
         db_session.query(Task).delete()
         db_session.query(CaseBrainLog).delete()
         db_session.query(Email).delete()
+        db_session.query(MatterEvent).delete()
         db_session.query(MatterParticipant).filter(MatterParticipant.matter_key.like('TEST-%')).delete()
         db_session.query(Matter).filter(Matter.matter_key.like('TEST-%')).delete()
         # Also clean up any test matters created with other patterns

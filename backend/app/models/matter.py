@@ -20,6 +20,7 @@ if TYPE_CHECKING:
     from app.models.email import Email
     from app.models.case_brain_log import CaseBrainLog
     from app.models.task import Task
+    from app.models.matter_event import MatterEvent
 
 
 class Matter(Base):
@@ -128,6 +129,10 @@ class Matter(Base):
     )
     tasks: Mapped[List["Task"]] = relationship(
         "Task",
+        back_populates="matter",
+    )
+    matter_events: Mapped[List["MatterEvent"]] = relationship(
+        "MatterEvent",
         back_populates="matter",
     )
 

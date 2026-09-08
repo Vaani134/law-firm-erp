@@ -5,3 +5,4 @@ from app.models.matter_participant import MatterParticipant  # noqa: F401
 from app.models.email import Email  # noqa: F401
 from app.models.case_brain_log import CaseBrainLog  # noqa: F401
 from app.models.task import Task  # noqa: F401
+from app.models.matter_event import MatterEvent  # noqa: F401
