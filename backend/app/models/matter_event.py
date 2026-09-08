@@ -8,6 +8,12 @@ Design rules:
   - event_type and source_type are application-level validated strings.
   - metadata stores structured JSONB data, not arbitrary prose.
   - Partial unique index prevents duplicate events when source_reference is present.
+
+Boundary note:
+  event_metadata is an audit/storage payload. It is intentionally NOT exposed
+  directly to automation rule conditions. The automation context is built from
+  the event's structured columns plus the Matter's deterministic fields. This
+  keeps rule evaluation predictable and avoids coupling rules to payload shape.
 """
 
 from __future__ import annotations
